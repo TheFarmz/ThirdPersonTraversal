@@ -1,0 +1,109 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PistolShooter : MonoBehaviour
+{
+    public GameObject bulletPrefab; // The prefab for the bullet
+    public Transform barrelEnd; // The transform representing the end of the barrel
+    public float fireRate = 0.5f; // The rate of fire in shots per second
+    public int maxAmmo = 6; // The maximum number of bullets in the gun's magazine
+    public float reloadTime = 1.5f; // The time it takes to reload the gun in seconds
+    public float bulletVelocity = 500f; // The speed at which the bullet travels
+    public AudioClip shootSound; // The sound effect to play when shooting
+    public AudioClip reloadSound; // The sound effect to play when reloading
+
+    private float nextFireTime; // The time at which the next shot can be fired
+    private int ammo; // The current number of bullets in the gun's magazine
+    private bool reloading; // A flag indicating whether the gun is currently reloading
+
+    void Start()
+    {
+        // Initialize the ammo and nextFireTime variables
+        ammo = maxAmmo;
+        nextFireTime = Time.time;
+    }
+
+    void Update()
+    {
+        // Check if the player has pressed the left mouse button
+        if (Input.GetMouseButtonDown(0))
+        {
+            // Check if the gun is currently reloading or if there is no ammo left
+            if (reloading || ammo <= 0)
+            {
+                // Do nothing
+                return;
+            }
+
+            // Check if the time between shots has elapsed
+            if (Time.time >= nextFireTime)
+            {
+                // Fire a bullet
+                FireBullet();
+
+                // Update the nextFireTime variable
+                nextFireTime = Time.time + 1f / fireRate;
+            }
+        }
+
+        // Check if the player has pressed the "R" key
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            // Check if the gun is already reloading or if there is no need to reload
+            if (reloading || ammo == maxAmmo)
+            {
+                // Do nothing
+                return;
+            }
+
+            // Start the reloading process
+            StartCoroutine(Reload());
+        }
+    }
+
+    // Fires a bullet from the gun
+    void FireBullet()
+    {
+        // Decrement the ammo count
+        ammo--;
+
+        // Instantiate a bullet at the barrel end
+        GameObject bullet = Instantiate(bulletPrefab, barrelEnd.position, barrelEnd.rotation);
+
+        // Add velocity to the bullet
+        bullet.GetComponent<Rigidbody>().velocity = barrelEnd.forward * bulletVelocity;
+
+        // Play the shooting sound effect
+        AudioSource.PlayClipAtPoint(shootSound, barrelEnd.position);
+    }
+
+    // Coroutine for reloading the gun
+    IEnumerator Reload()
+    {
+        // Set the reloading flag to true
+        reloading = true;
+
+        // Play the reloading sound effect
+        AudioSource.PlayClipAtPoint(reloadSound, barrelEnd.position);
+
+        // Wait for the reload time to el
+    // Coroutine for reloading the gun
+    IEnumerator Reload()
+    {
+        // Set the reloading flag to true
+        reloading = true;
+
+        // Play the reloading sound effect
+        AudioSource.PlayClipAtPoint(reloadSound, barrelEnd.position);
+
+        // Wait for the reload time to elapsed
+        yield return new WaitForSeconds(reloadTime);
+
+        // Refill the ammo
+        ammo = maxAmmo;
+
+        // Set the reloading flag to false
+        reloading = false;
+    }
+}
